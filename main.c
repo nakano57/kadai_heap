@@ -9,28 +9,11 @@ typedef struct _point
   int *x;
 } POINT;
 
-typedef struct _node
-{
-  int data;
-  struct _node *left;
-  struct _node *right;
-} NODE;
-
 typedef struct _list
 {
   int d;
   struct _list *next;
 } LIST;
-
-NODE *init_node()
-{
-  NODE *p;
-  p = (NODE *)malloc(sizeof(NODE));
-  p->data = 0;
-  p->left = NULL;
-  p->right = NULL;
-  return p;
-}
 
 int dis(POINT *p)
 {
@@ -39,82 +22,70 @@ int dis(POINT *p)
   {
     dis = dis + (p->x[i] * p->x[i]);
   }
-  //dis = sqrt(dis);
+  dis = sqrt(dis);
   return dis;
 }
 
-/* 値を入れ替える関数 */
 void swap(POINT *x, POINT *y)
 {
-  int *temp; // 値を一時保存する変数
+  int *temp;
 
   temp = x->x;
   x->x = y->x;
   y->x = temp;
 }
 
-/* pushdouwn操作 */
-void pushdown(POINT **array, int first, int last)
-{
-  int parent = first;     // 親
-  int child = 2 * parent; // 左の子
-  while (child <= last)
-  {
-    if ((child < last) && (dis(array[child]) < dis(array[child + 1])))
-    {
-      child++; // 右の子の方が大きいとき、右の子を比較対象に設定
-    }
-    if (dis(array[child]) <= dis(array[parent]))
-    {
-      break;
-    } // ヒープ済み
-    swap(array[child], array[parent]);
-    parent = child;
-    child = 2 * parent;
-  }
-}
-
-/* ヒープソート */
-void heap_sort(POINT **array, int array_size)
-{
-  int i;
-
-  for (i = array_size / 2; i >= 1; i--)
-  {
-    pushdown(array, i, array_size); // 全体をヒープ化
-  }
-  for (i = array_size; i >= 2; i--)
-  {
-    swap(array[1], array[i]);  // 最大のものを最後に
-    pushdown(array, 1, i - 1); // ヒープ再構築
-  }
-}
-
 void insert_heap(POINT *p, POINT **array)
 {
 
   int len = 0;
+  int child, parent, d1, d2;
 
   while (array[len] != NULL)
   {
     len++;
   }
-
   array[len] = p;
 
-  //int data = dis(array[len]);
+  child = len;
+  parent = len / 2;
+  while (parent >= 1)
+  {
+    d1 = dis(array[child]);
+    d2 = dis(array[parent]);
+    if (d1 > d2)
+    {
+      swap(array[child], array[parent]);
+    }
+    child = parent;
+    parent = child / 2;
+  }
+}
 
-  //array[len] = data;
-
-  heap_sort(array, len);
+bool check_heep(POINT **heep, int n)
+{
+  int i = 1;
+  while ((2 * i + 1) < n)
+  {
+    if (heep[i] > heep[i * 2])
+    {
+      return false;
+    }
+    if (heep[i] > heep[i * 2 + 1])
+    {
+      return false;
+    }
+    i++;
+  }
+  return true;
 }
 
 int main(int argc, char const *argv[])
 {
   /*100次元の点をn個作成*/
-  int r, M = 100; //Mはrandの最大
-  //int n = atoi(argv[1]); //nは作る点の数
-  int n = 1000;
+  int r, M = 100;        //Mはrandの最大
+  int n = atoi(argv[1]); //nは作る点の数
+  //int n = 1000;
   POINT **p;
   p = (POINT **)malloc(sizeof(POINT *) * n);
 
@@ -152,19 +123,19 @@ int main(int argc, char const *argv[])
   for (int i = 0; i < n; i++)
   {
     insert_heap(p[i], heap);
-    printf("%d\n", i);
   }
 
   end = clock();
   time = (double)(end - start) / CLOCKS_PER_SEC;
-  //printf("%f", time);
 
-  for (int i = 1; i < n + 1; i++)
-  {
-    printf("%d,", dis(heap[i]));
-  }
-  printf("\n");
+  // for (int i = 1; i < n + 1; i++)
+  // {
+  //   printf("%d,", dis(heap[i]));
+  // }
+  // printf("\n");
 
-  printf("%f\n", time);
+  // printf("%d\n", check_heep(heap, n));
+
+  printf("%f", time);
   return 0;
 }
